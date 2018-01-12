@@ -3,8 +3,6 @@ import argparse
 import json
 
 import cv2
-# initialize the list of reference points and boolean indicating
-# whether cropping is being performed or not
 import os
 
 from utils import images_in_dir
