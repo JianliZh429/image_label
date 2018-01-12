@@ -14,16 +14,19 @@ drawing = False
 cropping = False
 rects = []
 
+im = None
+
 
 def click_and_crop(event, x, y, flags, param):
     global ref_pnt, drawing
-
     if event == cv2.EVENT_LBUTTONDOWN:
         ref_pnt = [(x, y)]
         drawing = True
+        global im
+        im = image.copy()
     elif event == cv2.EVENT_MOUSEMOVE and drawing is True:
-        cv2.rectangle(image, ref_pnt[0], (x, y), (0, 255, 0), 1)
-        cv2.imshow("image", image)
+        cv2.rectangle(im, ref_pnt[0], (x, y), (0, 0, 255), 1)
+        cv2.imshow("Label", im)
     elif event == cv2.EVENT_LBUTTONUP and drawing is True:
         drawing = False
         ref_pnt.append((x, y))
@@ -36,8 +39,7 @@ def click_and_crop(event, x, y, flags, param):
                 'y1': y1,
                 'y2': y2
             })
-            cv2.rectangle(image, ref_pnt[0], ref_pnt[1], (0, 0, 255), 2)
-            cv2.imshow("image", image)
+            _show_image()
 
 
 def _next():
@@ -61,9 +63,16 @@ def _create_image_json():
 def _save_json():
     global rects
     if rects:
-        print("rects are: {}".format(rects))
+        print("Rects of {}: {}".format(img_file, rects))
         _create_image_json()
         rects = []
+
+
+def _show_image():
+    cloned = image.copy()
+    for r in rects:
+        cv2.rectangle(cloned, (r['x1'], r['y1']), (r['x2'], r['y2']), (0, 0, 255), 2)
+    cv2.imshow("Label", cloned)
 
 
 if __name__ == '__main__':
@@ -78,24 +87,26 @@ if __name__ == '__main__':
 
     images = iter(images_in_dir(images_dir))
 
-    cv2.namedWindow("image")
-    cv2.setMouseCallback("image", click_and_crop)
+    cv2.namedWindow("Label")
+    cv2.setMouseCallback("Label", click_and_crop)
 
     image, img_file = _next()
     while True:
         try:
-            clone = image.copy()
-            cv2.imshow("image", image)
+            _show_image()
         except StopIteration as e:
             _save_json()
             break
 
         key = cv2.waitKey(1) & 0xFF
-
         if key == ord("n"):
             _save_json()
             image, img_file = _next()
         # if the 'c' key is pressed, break from the loop
+        elif key == 8:
+            if rects:
+                rects.pop()
+                _show_image()
         elif key == ord("c"):
             _save_json()
             break
