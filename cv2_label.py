@@ -52,8 +52,8 @@ def _create_image_json():
     print(out)
     with open(out, mode='w', encoding='utf-8') as f:
         j = {
-            "rects": rects,
-            "image_path": img_file
+            "image_path": img_file,
+            "rects": rects
         }
         json.dump(j, f)
 
