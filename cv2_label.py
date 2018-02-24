@@ -10,39 +10,40 @@ from utils import images_in_dir
 ref_pnt = []
 drawing = False
 cropping = False
-rects = []
-
+rectangles = []
+image = None
 im = None
 
 
 def click_and_crop(event, x, y, flags, param):
-    global ref_pnt, drawing
+    global ref_pnt, drawing, image, im
     if event == cv2.EVENT_LBUTTONDOWN:
         ref_pnt = [(x, y)]
         drawing = True
-        global im
         im = image.copy()
     elif event == cv2.EVENT_MOUSEMOVE and drawing is True:
-        cv2.rectangle(im, ref_pnt[0], (x, y), (0, 0, 255), 1)
-        cv2.imshow("Label", im)
+        copied = im.copy()
+        cv2.rectangle(copied, ref_pnt[0], (x, y), (0, 0, 255), 1)
+        image = copied
+
     elif event == cv2.EVENT_LBUTTONUP and drawing is True:
         drawing = False
         ref_pnt.append((x, y))
         (x1, y1) = ref_pnt[0]
         (x2, y2) = ref_pnt[1]
         if x2 - x1 > 1 and y2 - y1 > 1:
-            rects.append({
+            rectangles.append({
                 'x1': x1,
                 'x2': x2,
                 'y1': y1,
                 'y2': y2
             })
-            _show_image()
+            _update_image()
 
 
 def _next():
-    img_file = next(images)
-    return cv2.imread(img_file), img_file
+    im_file = next(images)
+    return cv2.imread(im_file), im_file
 
 
 def _create_image_json():
@@ -53,31 +54,31 @@ def _create_image_json():
     with open(out, mode='w', encoding='utf-8') as f:
         j = {
             "image_path": img_file,
-            "rects": rects
+            "rects": rectangles
         }
         json.dump(j, f)
 
 
 def _save_json():
-    global rects
-    if rects:
-        print("Rects of {}: {}".format(img_file, rects))
+    global rectangles
+    if rectangles:
+        print("Rects of {}: {}".format(img_file, rectangles))
         _create_image_json()
-        rects = []
+        rectangles = []
 
 
-def _show_image():
-    cloned = image.copy()
-    for r in rects:
+def _update_image():
+    cloned = im.copy()
+    for r in rectangles:
         cv2.rectangle(cloned, (r['x1'], r['y1']), (r['x2'], r['y2']), (0, 0, 255), 2)
-    cv2.imshow("Label", cloned)
-    return cloned
+    global image
+    image = cloned
 
 
 def _save_image():
     f_name = img_file.split(os.sep)[-1]
     out = os.path.join(output_dir, '{}.png'.format(f_name))
-    cv2.imwrite(out, labeled)
+    cv2.imwrite(out, image)
 
 
 if __name__ == '__main__':
@@ -92,16 +93,17 @@ if __name__ == '__main__':
 
     images = iter(images_in_dir(images_dir))
 
-    cv2.namedWindow("Label")
+    cv2.namedWindow("Label", cv2.WINDOW_AUTOSIZE)
     cv2.setMouseCallback("Label", click_and_crop)
-
     image, img_file = _next()
-    labeled = None
+
     while True:
         try:
-            _show_image()
+            cv2.setWindowTitle("Label", img_file)
+            cv2.imshow("Label", image)
         except StopIteration as e:
             _save_json()
+            _save_image()
             break
 
         key = cv2.waitKey(1) & 0xFF
@@ -111,14 +113,13 @@ if __name__ == '__main__':
             image, img_file = _next()
         # if the 'c' key is pressed, break from the loop
         elif key == 8:
-            if rects:
-                rects.pop()
-                labeled = _show_image()
+            if rectangles:
+                rectangles.pop()
+                _update_image()
         elif key == ord("c"):
             _save_json()
+            _save_image()
             break
-
-    cv2.waitKey(0)
 
     # close all open windows
     cv2.destroyAllWindows()
