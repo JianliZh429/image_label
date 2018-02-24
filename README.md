@@ -4,7 +4,7 @@ A tool to help label images
 # How to use
 
 ```
-$python cv2_label.py --i $images_dir -o $output_dir
+$python cv2_label.py -i $images_dir -o $output_dir
 ```
 
 ## keyboard shortcut

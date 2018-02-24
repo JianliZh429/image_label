@@ -71,6 +71,13 @@ def _show_image():
     for r in rects:
         cv2.rectangle(cloned, (r['x1'], r['y1']), (r['x2'], r['y2']), (0, 0, 255), 2)
     cv2.imshow("Label", cloned)
+    return cloned
+
+
+def _save_image():
+    f_name = img_file.split(os.sep)[-1]
+    out = os.path.join(output_dir, '{}.png'.format(f_name))
+    cv2.imwrite(out, labeled)
 
 
 if __name__ == '__main__':
@@ -89,6 +96,7 @@ if __name__ == '__main__':
     cv2.setMouseCallback("Label", click_and_crop)
 
     image, img_file = _next()
+    labeled = None
     while True:
         try:
             _show_image()
@@ -99,12 +107,13 @@ if __name__ == '__main__':
         key = cv2.waitKey(1) & 0xFF
         if key == ord("n"):
             _save_json()
+            _save_image()
             image, img_file = _next()
         # if the 'c' key is pressed, break from the loop
         elif key == 8:
             if rects:
                 rects.pop()
-                _show_image()
+                labeled = _show_image()
         elif key == ord("c"):
             _save_json()
             break
