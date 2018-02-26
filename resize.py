@@ -16,7 +16,7 @@ def resize(in_dir, out_dir, dsize):
         resized = cv2.resize(im, dsize)
         cv2.imwrite(image_path, resized)
         print('{} done.'.format(img))
-        
+
     print("All done, {} images.".format(len(img_files)))
 
 
