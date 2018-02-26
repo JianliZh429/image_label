@@ -1,5 +1,5 @@
 # image_label
-A tool to help label images
+A tool to help labeling images
 
 # How to use
 
