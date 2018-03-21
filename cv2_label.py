@@ -42,8 +42,11 @@ def click_and_crop(event, x, y, flags, param):
 
 
 def _next():
-    im_file = next(images)
-    return cv2.imread(im_file), im_file
+    im_file = next(images, None)
+    if img_file is not None:
+        return cv2.imread(im_file), im_file
+    else:
+        return None, None
 
 
 def _create_image_json():
@@ -98,7 +101,9 @@ if __name__ == '__main__':
     images_dir = args['images_dir']
     output_dir = args['output_dir']
 
-    images = iter(images_in_dir(images_dir))
+    all_images = images_in_dir(images_dir)
+    all_images = sorted(all_images)
+    images = iter(all_images)
 
     cv2.namedWindow("Label", cv2.WINDOW_AUTOSIZE)
     cv2.setMouseCallback("Label", click_and_crop)
@@ -116,6 +121,9 @@ if __name__ == '__main__':
         if key == ord("n"):
             _save_result()
             raw_image, img_file = _next()
+            if raw_image is None or img_file is None:
+                print("All done, no more images.")
+                break
             image = raw_image.copy()
         # if the 'c' key is pressed, break from the loop
         elif key == 8:
