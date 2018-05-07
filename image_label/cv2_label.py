@@ -5,7 +5,7 @@ import json
 import cv2
 import os
 
-from utils import images_in_dir
+from img_utils.files import images_in_dir
 
 ref_pnt = []
 drawing = False

@@ -3,7 +3,7 @@ import sys
 
 import os
 
-from utils import json_in_dir
+from tools.utils import json_in_dir
 
 
 def merge(json_file_dir):

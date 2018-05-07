@@ -3,15 +3,15 @@ import argparse
 import cv2
 import os
 
-from utils import images_in_dir, f_name
+from img_utils.files import images_in_dir, fname
 
 
 def resize(in_dir, out_dir, dsize):
     img_files = images_in_dir(in_dir)
 
     for img in img_files:
-        fname = f_name(img, without_ext=False)
-        image_path = os.path.join(out_dir, fname)
+        f_name = fname(img, without_ext=False)
+        image_path = os.path.join(out_dir, f_name)
         im = cv2.imread(img)
         resized = cv2.resize(im, dsize)
         cv2.imwrite(image_path, resized)
